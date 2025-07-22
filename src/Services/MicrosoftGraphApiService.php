@@ -10,6 +10,8 @@ use InnoGE\LaravelMsGraphMail\Exceptions\InvalidResponse;
 
 class MicrosoftGraphApiService
 {
+    protected ?string $cachedToken = null;
+
     public function __construct(
         protected readonly string $tenantId,
         protected readonly string $clientId,
@@ -32,22 +34,26 @@ class MicrosoftGraphApiService
 
     protected function getAccessToken(): string
     {
-        return Cache::remember('microsoft-graph-api-access-token', $this->accessTokenTtl, function (): string {
-            $response = Http::asForm()
-                ->post("https://login.microsoftonline.com/{$this->tenantId}/oauth2/v2.0/token",
-                    [
-                        'grant_type' => 'client_credentials',
-                        'client_id' => $this->clientId,
-                        'client_secret' => $this->clientSecret,
-                        'scope' => 'https://graph.microsoft.com/.default',
-                    ]);
+        if ($this->cachedToken) {
+            return $this->cachedToken;
+        }
 
-            $response->throw();
+        $response = Http::asForm()
+            ->post("https://login.microsoftonline.com/{$this->tenantId}/oauth2/v2.0/token", [
+                'grant_type' => 'client_credentials',
+                'client_id' => $this->clientId,
+                'client_secret' => $this->clientSecret,
+                'scope' => 'https://graph.microsoft.com/.default',
+            ]);
 
-            $accessToken = $response->json('access_token');
-            throw_unless(is_string($accessToken), new InvalidResponse('Expected response to contain key access_token of type string, got: '.var_export($accessToken, true).'.'));
+        $response->throw();
 
-            return $accessToken;
-        });
+        $accessToken = $response->json('access_token');
+
+        throw_unless(is_string($accessToken), new InvalidResponse(
+            'Expected response to contain key access_token of type string, got: ' . var_export($accessToken, true) . '.'
+        ));
+
+        return $this->cachedToken = $accessToken;
     }
 }
