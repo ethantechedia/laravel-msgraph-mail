@@ -1,12 +1,12 @@
 {
-    "name": "innoge/laravel-msgraph-mail",
+    "name": "ethantechedia/laravel-msgraph-mail",
     "description": "Laravel Mail driver for Microsoft Office 365 using the MSGraph API",
     "keywords": [
         "InnoGE",
         "laravel",
         "laravel-msgraph-mail"
     ],
-    "homepage": "https://github.com/innoge/laravel-msgraph-mail",
+    "homepage": "https://github.com/ethantechedia/laravel-msgraph-mail",
     "license": "MIT",
     "authors": [
         {
